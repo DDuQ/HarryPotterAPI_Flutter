@@ -7,12 +7,12 @@ class Character {
   String gender = '';
   String house = '';
   String dateOfBirth = '';
-  int yearOfBirth = 0;
+  String yearOfBirth = '';
   bool wizard = false;
   String ancestry = '';
   String eyeColour = '';
   String hairColour = '';
-  Wand wand = Wand(wood: '', core: '', length: 1);
+  Wand wand = Wand(wood: '', core: '', length: '');
   String patronus = '';
   bool hogwartsStudent = false;
   bool hogwartsStaff = false;
@@ -44,12 +44,20 @@ class Character {
 
   Character.fromJson(Map<String, dynamic> json) {
     name = json['name'];
-    alternateNames = json['alternate_names'].cast<String>();
+    if (json['alternate_names'] != null) {
+      if (json['alternate_names'] is String) {
+        alternateNames.add(json['alternate_names']);
+      } else {
+        json['alternate_names'].forEach((v) {
+          alternateNames.add(v);
+        });
+      }
+    }
     species = json['species'];
     gender = json['gender'];
     house = json['house'];
     dateOfBirth = json['dateOfBirth'];
-    yearOfBirth = json['yearOfBirth'];
+    yearOfBirth = json['yearOfBirth'].toString();
     wizard = json['wizard'];
     ancestry = json['ancestry'];
     eyeColour = json['eyeColour'];
