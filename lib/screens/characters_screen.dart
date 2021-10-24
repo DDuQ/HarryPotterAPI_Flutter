@@ -355,12 +355,13 @@ class _CharactersScreenState extends State<CharactersScreen> {
   }
 
   _verifyConnection() {
-    _hasConectivity();
     if (_hasInternet) {
       Navigator.of(context).pop();
       setState(() {
         _getCharacters();
       });
+    } else {
+      _hasConectivity();
     }
   }
 }
