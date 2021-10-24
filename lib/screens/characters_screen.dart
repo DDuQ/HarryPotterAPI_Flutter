@@ -1,9 +1,11 @@
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
+import 'package:harry_potter_api/components/loader_component.dart';
 import 'package:harry_potter_api/helpers/api_helper.dart';
 import 'package:harry_potter_api/models/character.dart';
 import 'package:harry_potter_api/models/response.dart';
+import 'package:harry_potter_api/screens/character_info_screen.dart';
 import 'package:harry_potter_api/widgets/text_info.dart';
 
 class CharactersScreen extends StatefulWidget {
@@ -14,6 +16,7 @@ class CharactersScreen extends StatefulWidget {
 }
 
 class _CharactersScreenState extends State<CharactersScreen> {
+  bool _hasInternet = false;
   bool _isFiltered = false;
   String _search = '';
 
@@ -52,11 +55,13 @@ class _CharactersScreenState extends State<CharactersScreen> {
               ),
               Expanded(
                 child: SingleChildScrollView(
-                  child: Column(
-                    children: _characters.map((character) {
-                      return characterInfo(context, width, character);
-                    }).toList(),
-                  ),
+                  child: _showLoader
+                      ? LoaderComponent()
+                      : Column(
+                          children: _characters.map((character) {
+                            return characterInfo(context, width, character);
+                          }).toList(),
+                        ),
                 ),
               ),
             ],
@@ -72,7 +77,9 @@ class _CharactersScreenState extends State<CharactersScreen> {
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => Container()),
+          MaterialPageRoute(
+            builder: (context) => CharacterInfo(character: character),
+          ),
         );
       },
       child: Container(
@@ -161,17 +168,7 @@ class _CharactersScreenState extends State<CharactersScreen> {
 
     var connectivityResult = await Connectivity().checkConnectivity();
     if (connectivityResult == ConnectivityResult.none) {
-      setState(() {
-        _showLoader = true;
-      });
-
-      await showAlertDialog(
-          context: context,
-          title: 'Error',
-          message: 'Verifica que estés conectado a internet.',
-          actions: <AlertDialogAction>[
-            AlertDialogAction(key: null, label: 'Aceptar')
-          ]);
+      checkInternetError();
       return;
     }
 
@@ -198,7 +195,7 @@ class _CharactersScreenState extends State<CharactersScreen> {
   }
 
   Widget _getContent() {
-    return _characters.length == 0 ? _noContent() : _getListView();
+    return _characters.length == 0 ? _noContent() : _getListView(context);
   }
 
   Widget _noContent() {
@@ -215,12 +212,41 @@ class _CharactersScreenState extends State<CharactersScreen> {
     );
   }
 
-  Widget _getListView() {
+  Widget _getListView(context) {
+    final double width = MediaQuery.of(context).size.width;
     return RefreshIndicator(
       onRefresh: _getCharacters,
-      child: ListView(
-          // children: _characters.map((procedure) {}).toList(),
-          ),
+      child: Column(
+        children: _characters.map((character) {
+          return characterInfo(context, width, character);
+        }).toList(),
+      ),
     );
+  }
+
+  Center checkInternetError() {
+    return Center(
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          padding: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+          textStyle: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+        child: Text('Check internet'),
+        onPressed: () => _hasConectivity(),
+      ),
+    );
+  }
+
+  void _hasConectivity() async {
+    var connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult == ConnectivityResult.none) {
+      setState(() {
+        _hasInternet = false;
+      });
+    } else {
+      setState(() {
+        _hasInternet = true;
+      });
+    }
   }
 }
