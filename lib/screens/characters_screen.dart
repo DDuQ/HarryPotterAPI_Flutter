@@ -5,7 +5,7 @@ import 'package:harry_potter_api/components/loader_component.dart';
 import 'package:harry_potter_api/helpers/api_helper.dart';
 import 'package:harry_potter_api/models/character.dart';
 import 'package:harry_potter_api/models/response.dart';
-import 'package:harry_potter_api/screens/character_info_screen.dart';
+import 'package:harry_potter_api/screens/character_details_screen.dart';
 import 'package:harry_potter_api/widgets/text_info.dart';
 
 class CharactersScreen extends StatefulWidget {
@@ -48,6 +48,22 @@ class _CharactersScreenState extends State<CharactersScreen> {
                 padding: const EdgeInsets.only(left: 20, right: 20),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _isFiltered
+                        ? IconButton(
+                            padding: EdgeInsets.zero,
+                            constraints: BoxConstraints(),
+                            icon: Icon(Icons.filter_none,
+                                color: Color(0xFF363f93)),
+                            onPressed: () => _removeFilter(),
+                          )
+                        : IconButton(
+                            padding: EdgeInsets.zero,
+                            constraints: BoxConstraints(),
+                            icon: Icon(Icons.filter_alt,
+                                color: Color(0xFF363f93)),
+                            onPressed: () => _showFilter()),
+                  ],
                 ),
               ),
               SizedBox(
@@ -78,7 +94,7 @@ class _CharactersScreenState extends State<CharactersScreen> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => CharacterInfo(character: character),
+            builder: (context) => CharacterDetails(character: character),
           ),
         );
       },
@@ -124,7 +140,9 @@ class _CharactersScreenState extends State<CharactersScreen> {
                     borderRadius: BorderRadius.circular(10.0),
                     image: DecorationImage(
                       fit: BoxFit.fill,
-                      image: NetworkImage(character.image),
+                      image: character.image.toString() == ""
+                          ? AssetImage('assets/no-image.jpg') as ImageProvider
+                          : NetworkImage(character.image),
                     ),
                   ),
                 ),
@@ -226,13 +244,16 @@ class _CharactersScreenState extends State<CharactersScreen> {
 
   Center checkInternetError() {
     return Center(
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          padding: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
-          textStyle: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+      child: Container(
+        
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            padding: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+            textStyle: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          child: Text('Check internet'),
+          onPressed: () => _hasConectivity(),
         ),
-        child: Text('Check internet'),
-        onPressed: () => _hasConectivity(),
       ),
     );
   }
@@ -248,5 +269,75 @@ class _CharactersScreenState extends State<CharactersScreen> {
         _hasInternet = true;
       });
     }
+  }
+
+  _removeFilter() {
+    setState(() {
+      _isFiltered = false;
+    });
+    _hasConectivity();
+    _getCharacters();
+  }
+
+  _showFilter() {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            title: Text('Filter Characters'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Text('Write down the first letters of the character'),
+                SizedBox(height: 10),
+                TextField(
+                  autofocus: true,
+                  decoration: InputDecoration(
+                      hintText: 'Search criteria...',
+                      labelText: 'Search',
+                      suffixIcon: Icon(Icons.search)),
+                  onChanged: (value) {
+                    setState(() {
+                      _search = value;
+                    });
+                  },
+                )
+              ],
+            ),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => _filter(),
+                child: Text('Filter'),
+              ),
+            ],
+          );
+        });
+  }
+
+  void _filter() {
+    if (_search.isEmpty) {
+      return;
+    }
+
+    List<Character> filteredList = [];
+
+    for (var character in _characters) {
+      if (character.name.toLowerCase().contains(_search.toLowerCase())) {
+        filteredList.add(character);
+      }
+    }
+
+    setState(() {
+      _characters = filteredList;
+      _isFiltered = true;
+    });
+
+    Navigator.of(context).pop();
   }
 }

@@ -9,22 +9,26 @@ class LoaderComponent extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Container(
+        margin: EdgeInsetsDirectional.only(top: 130),
         width: 200,
-        height: 100,
+        height: 300,
         decoration: BoxDecoration(
-            image: DecorationImage(
-                image: AssetImage("assets/loading.gif"), fit: BoxFit.cover),
-            color: Colors.blueGrey[500],
-            borderRadius: BorderRadius.circular(10)),
+            color: Colors.cyan[100], borderRadius: BorderRadius.circular(10)),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            Image(
+              image: AssetImage("assets/loading.gif"),
+            ),
+            SizedBox(
+              height: 25,
+            ),
             CircularProgressIndicator(),
             SizedBox(
               height: 20,
             ),
             Text(
-              text,
+              'Cargando personajes...',
               style: TextStyle(fontSize: 20),
             ),
           ],
