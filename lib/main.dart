@@ -28,24 +28,32 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Harry Potter API',
-      home: _hasInternet
-          ? CharactersScreen()
-          : checkInternetError(),
+      home: _hasInternet ? CharactersScreen() : checkInternetError(),
     );
   }
 
-  Center checkInternetError() {
-    return Center(
+  Widget checkInternetError() {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Image(
+            image: AssetImage('assets/connectionError.gif'),
+          ),
+          Center(
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
                 padding: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
-                textStyle:
-                    TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                textStyle: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
-              child: Text('Check internet'),
+              child: Text('Check Internet'),
               onPressed: () => _hasConectivity(),
             ),
-          );
+          ),
+        ],
+      ),
+    );
   }
 
   void _hasConectivity() async {

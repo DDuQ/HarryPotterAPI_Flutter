@@ -27,6 +27,7 @@ class _CharactersScreenState extends State<CharactersScreen> {
   void initState() {
     super.initState();
     _getCharacters();
+    _hasConectivity();
   }
 
   @override
@@ -69,17 +70,13 @@ class _CharactersScreenState extends State<CharactersScreen> {
               SizedBox(
                 height: 15,
               ),
-              Expanded(
-                child: SingleChildScrollView(
-                  child: _showLoader
-                      ? LoaderComponent()
-                      : Column(
-                          children: _characters.map((character) {
-                            return characterInfo(context, width, character);
-                          }).toList(),
-                        ),
-                ),
-              ),
+              _hasInternet
+                  ? Expanded(
+                      child: SingleChildScrollView(
+                          child:
+                              _showLoader ? LoaderComponent() : _getContent()),
+                    )
+                  : _noContent(),
             ],
           ),
         ),
@@ -186,7 +183,15 @@ class _CharactersScreenState extends State<CharactersScreen> {
 
     var connectivityResult = await Connectivity().checkConnectivity();
     if (connectivityResult == ConnectivityResult.none) {
-      checkInternetError();
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => checkInternetError(),
+        ),
+      );
+      setState(() {
+        _showLoader = false;
+      });
       return;
     }
 
@@ -242,18 +247,26 @@ class _CharactersScreenState extends State<CharactersScreen> {
     );
   }
 
-  Center checkInternetError() {
-    return Center(
-      child: Container(
-        
-        child: ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            padding: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
-            textStyle: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+  Widget checkInternetError() {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Image(
+            image: AssetImage('assets/connectionError.gif'),
           ),
-          child: Text('Check internet'),
-          onPressed: () => _hasConectivity(),
-        ),
+          Center(
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                padding: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+                textStyle: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              child: Text('Check Internet'),
+              onPressed: () => _verifyConnection(),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -339,5 +352,15 @@ class _CharactersScreenState extends State<CharactersScreen> {
     });
 
     Navigator.of(context).pop();
+  }
+
+  _verifyConnection() {
+    _hasConectivity();
+    if (_hasInternet) {
+      Navigator.of(context).pop();
+      setState(() {
+        _getCharacters();
+      });
+    }
   }
 }
