@@ -283,7 +283,6 @@ class _CharactersScreenState extends State<CharactersScreen> {
       });
     }
   }
-
   _removeFilter() {
     setState(() {
       _isFiltered = false;
